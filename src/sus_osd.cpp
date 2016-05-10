@@ -272,17 +272,19 @@ OSDConfig (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       }
       if (LOWORD (wParam) == IDOK)
       {
-        osd->custom_d3d->store   ();
-        osd->stealth_mode->store ();
+        if (osd->delay_triggers) {
+          osd->custom_d3d->store   ();
+          osd->stealth_mode->store ();
 
-        wchar_t wszDelayMS [16];
-        Edit_GetText (osd->hWndDelayTime, wszDelayMS, 15);
+          wchar_t wszDelayMS [16];
+          Edit_GetText (osd->hWndDelayTime, wszDelayMS, 15);
 
-        osd->delay_ms->set_value_str (wszDelayMS);
-        osd->delay_ms->set_value (osd->delay_ms->get_value () * 1000);
+          osd->delay_ms->set_value_str (wszDelayMS);
+          osd->delay_ms->set_value (osd->delay_ms->get_value () * 1000);
 
-        osd->delay_ms->store       ();
-        osd->delay_triggers->store ();
+          osd->delay_ms->store       ();
+          osd->delay_triggers->store ();
+        }
 
         EndDialog (hDlg, LOWORD (wParam));
         return (INT_PTR)TRUE;

@@ -38,6 +38,7 @@ public:
 //private:
   HWND hWndAspectRatioCorrection;
   HWND hWndStretchHUD;
+  HWND hWndCenterWindow;
 } *graphics = nullptr;
 
 suscfg_Graphics::suscfg_Graphics (void)
@@ -63,9 +64,13 @@ suscfg_Graphics::setup_ui (HWND hDlg)
 {
   hWndAspectRatioCorrection = GetDlgItem (hDlg, IDC_SUS_GRAPHICS_ARC);
   hWndStretchHUD            = GetDlgItem (hDlg, IDC_SUS_STRETCH_HUD);
+  hWndCenterWindow          = GetDlgItem (hDlg, IDC_SUS_CENTER_WINDOW);
 
   stretch_hud->bind_to_control (new ds3t::UI::CheckBox (hWndStretchHUD));
   stretch_hud->set_value (stretch_hud->get_value ());
+
+  center_window->bind_to_control (new ds3t::UI::CheckBox (hWndCenterWindow));
+  center_window->set_value (center_window->get_value ());
 
   ComboBox_ResetContent (hWndAspectRatioCorrection);
 
@@ -142,6 +147,7 @@ GraphicsConfig (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       {
         aspect_ratio_correction->store ();
         graphics->stretch_hud->store   ();
+        center_window->store           ();
 
         EndDialog (hDlg, LOWORD (wParam));
         return (INT_PTR)TRUE;

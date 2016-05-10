@@ -45,8 +45,11 @@ public:
   //private:
   HWND hWndFPSPreset;
   HWND hWndFPSCustom;
+  HWND hWndFlipMode;
+  HWND hWndFlipModeBuffers;
   HWND hWndMinimizeLatency;
   HWND hWndTripleBuffering;
+  HWND hWndSwapChainBuffers;
   HWND hWndPreRenderLimit;
 } *framerate = nullptr;
 
@@ -99,6 +102,42 @@ suscfg_Framerate::suscfg_Framerate (void)
   prerender_limit->load  ();
 }
 
+void
+setup_swapchain (HWND hDlg)
+{
+  bool triple = false;
+
+  if (! flip_mode->get_value ()) {
+    triple = framerate->backbuffer_count->get_value () == 2;
+
+    if (framerate->backbuffer_count->get_value () > 2)
+      framerate->backbuffer_count->set_value (2);
+
+    Button_Enable (framerate->hWndTripleBuffering,  true);
+
+    ShowWindow    (framerate->hWndFlipModeBuffers,  SW_HIDE);
+    ShowWindow    (framerate->hWndSwapChainBuffers, SW_HIDE);
+  } else {
+    if (framerate->backbuffer_count->get_value () < 2)
+      framerate->backbuffer_count->set_value (2);
+
+    if (framerate->backbuffer_count->get_value () > 6)
+      framerate->backbuffer_count->set_value (6);
+
+    Button_Enable (framerate->hWndTripleBuffering,  false);
+
+    ShowWindow    (framerate->hWndFlipModeBuffers,  SW_SHOW);
+    ShowWindow    (framerate->hWndSwapChainBuffers, SW_SHOW);
+  }
+
+  Button_SetCheck    (  framerate->hWndFlipMode,
+                          flip_mode->get_value () );
+  Button_SetCheck    ( framerate->hWndTripleBuffering,
+                         triple );
+  ComboBox_SetCurSel ( framerate->hWndSwapChainBuffers,
+                         framerate->backbuffer_count->get_value () - 2 );
+}
+
 bool
 suscfg_Framerate::setup_ui (HWND hDlg)
 {
@@ -107,6 +146,9 @@ suscfg_Framerate::setup_ui (HWND hDlg)
   hWndMinimizeLatency  = GetDlgItem (hDlg, IDC_SUS_FRAMERATE_MIN_LATENCY);
   hWndTripleBuffering  = GetDlgItem (hDlg, IDC_SUS_TRIPLE_BUFFERING);
   hWndPreRenderLimit   = GetDlgItem (hDlg, IDC_SUS_PRERENDER_LIMIT);
+  hWndFlipMode         = GetDlgItem (hDlg, IDC_SUS_FLIP_MODE);
+  hWndSwapChainBuffers = GetDlgItem (hDlg, IDC_SUS_BUFFER_COUNT);
+  hWndFlipModeBuffers  = GetDlgItem (hDlg, IDC_SUS_FLIP_BUFFERS); // Text label
 
   ComboBox_ResetContent (hWndFPSPreset);
 
@@ -166,8 +208,15 @@ suscfg_Framerate::setup_ui (HWND hDlg)
   else /*if (prerender == -1)*/
     ComboBox_SetCurSel (hWndPreRenderLimit, 0);
 
-  bool check = backbuffer_count->get_value () == 2;
-  Button_SetCheck (framerate->hWndTripleBuffering, check);
+  ComboBox_ResetContent (hWndSwapChainBuffers);
+
+  ComboBox_InsertString (hWndSwapChainBuffers, 0, L"2");
+  ComboBox_InsertString (hWndSwapChainBuffers, 1, L"3");
+  ComboBox_InsertString (hWndSwapChainBuffers, 2, L"4");
+  ComboBox_InsertString (hWndSwapChainBuffers, 3, L"5");
+  ComboBox_InsertString (hWndSwapChainBuffers, 4, L"6");
+
+  setup_swapchain (hDlg);
 
   return true;
 }
@@ -232,26 +281,38 @@ FramerateConfig (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
   case WM_COMMAND:
   {
-    if (LOWORD (wParam) == IDC_TARGET_FPS) {
-      if (HIWORD (wParam) == CBN_SELCHANGE) {
+    if (HIWORD (wParam) == CBN_SELCHANGE) {
+      if (LOWORD (wParam) == IDC_TARGET_FPS) {
         int fps_sel = ComboBox_GetCurSel (framerate->hWndFPSPreset);
         ShowWindow (framerate->hWndFPSCustom, fps_sel >= 4);
         framerate->fps->set_value (framerate->poll_framerate_limit (hDlg));
       }
     }
 
+    if (LOWORD (wParam) == IDC_SUS_FLIP_MODE) {
+      flip_mode->set_value (Button_GetCheck (framerate->hWndFlipMode));
+
+      setup_swapchain (hDlg);
+    }
+
     if (LOWORD (wParam) == IDOK)
     {
-      BOOL check;
+      BOOL triple;
 
-      //check = Button_GetCheck (framerate->hWndMinimizeLatency);
-      //framerate->minimize_latency->set_value (check);
-
-      check = Button_GetCheck (framerate->hWndTripleBuffering);
-      if (check) {
+      triple = Button_GetCheck (framerate->hWndTripleBuffering);
+      if (triple) {
         framerate->backbuffer_count->set_value (2);
       } else {
-        framerate->backbuffer_count->set_value (-1);
+        if (! flip_mode->get_value ()) {
+          framerate->backbuffer_count->set_value (-1);
+        } else {
+          framerate->backbuffer_count->set_value (
+            ComboBox_GetCurSel ( framerate->hWndSwapChainBuffers ) + 2
+          );
+
+          if (borderless_window->get_value ())
+            presentation_interval->set_value ( 0 );
+        }
       }
 
       framerate->prerender_limit->set_value (
@@ -263,10 +324,10 @@ FramerateConfig (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       );
       framerate->fps->store ();
 
-      //framerate->minimize_latency->store ();
-
       framerate->backbuffer_count->store ();
       framerate->prerender_limit->store  ();
+
+      flip_mode->store ();
 
       EndDialog (hDlg, LOWORD (wParam));
       return (INT_PTR)TRUE;

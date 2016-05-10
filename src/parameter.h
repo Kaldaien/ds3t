@@ -263,17 +263,28 @@ extern ds3t::ParameterInt*     res_y;
 extern ds3t::ParameterBool*    aspect_ratio_correction;
 
 
+extern ds3t::ParameterStringW* xml_ssao;
+extern ds3t::ParameterStringW* xml_dof;
+extern ds3t::ParameterStringW* xml_motion_blur;
+extern ds3t::ParameterStringW* xml_shadow_quality;
+extern ds3t::ParameterStringW* xml_lighting_quality;
+extern ds3t::ParameterStringW* xml_effects_quality;
+extern ds3t::ParameterStringW* xml_reflection_quality;
+extern ds3t::ParameterStringW* xml_water_quality;
+extern ds3t::ParameterStringW* xml_shader_quality;
+
 //extern ds3t::ParameterInt* max_fps;
 
 extern ds3t::ParameterInt*     use_vsync;
+extern ds3t::ParameterInt*     presentation_interval;
+extern ds3t::ParameterBool*    flip_mode;
+
+extern ds3t::ParameterBool*    center_window;
+extern ds3t::ParameterBool*    fullscreen_window;
+extern ds3t::ParameterBool*    borderless_window;
 
 extern ds3t::ParameterInt*     anisotropy;
 extern ds3t::ParameterInt*     texture_res;
-
-extern ds3t::ParameterStringW* level_of_detail;
-extern ds3t::ParameterStringW* shadow_quality;
-extern ds3t::ParameterStringW* antialiasing;
-extern ds3t::ParameterStringW* draw_distance;
 
 // This controls the auto-backup behavior (it's another non-game setting)
 extern ds3t::ParameterBool*    decline_backup;

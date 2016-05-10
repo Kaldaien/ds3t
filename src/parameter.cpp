@@ -331,14 +331,28 @@ ds3t::ParameterBool*    aspect_ratio_correction;
 
 
 ds3t::ParameterInt*     use_vsync;
+ds3t::ParameterInt*     presentation_interval;
+ds3t::ParameterBool*    flip_mode;
+
+ds3t::ParameterBool*    center_window;
+ds3t::ParameterBool*    fullscreen_window;
+ds3t::ParameterBool*    borderless_window;
 
 ds3t::ParameterInt*     anisotropy;
 ds3t::ParameterInt*     texture_res;
 
-ds3t::ParameterStringW* level_of_detail;
-ds3t::ParameterStringW* shadow_quality;
-ds3t::ParameterStringW* antialiasing;
-ds3t::ParameterStringW* draw_distance;
+ds3t::ParameterStringW* xml_texture_quality;
+ds3t::ParameterStringW* xml_antialiasing;
+
+ds3t::ParameterStringW* xml_ssao;
+ds3t::ParameterStringW* xml_dof;
+ds3t::ParameterStringW* xml_motion_blur;
+ds3t::ParameterStringW* xml_shadow_quality;
+ds3t::ParameterStringW* xml_lighting_quality;
+ds3t::ParameterStringW* xml_effects_quality;
+ds3t::ParameterStringW* xml_reflection_quality;
+ds3t::ParameterStringW* xml_water_quality;
+ds3t::ParameterStringW* xml_shader_quality;
 
 //ds3t::ParameterInt*   framerate_limiting;
 //ds3t::ParameterInt*   max_fps;

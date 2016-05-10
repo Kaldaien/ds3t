@@ -41,7 +41,7 @@
 
 using namespace ds3t;
 
-#define DS3T_VERSION_STR L"1.0.0"
+#define DS3T_VERSION_STR L"0.0.2"
 
 INT_PTR CALLBACK  Config (HWND, UINT, WPARAM, LPARAM);
 
@@ -197,6 +197,7 @@ void setup_driver_tweaks (HWND hDlg)
 
 std::wstring get_level_of_detail (HWND hDlg)
 {
+#if 0
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_LEVEL_OF_DETAIL));
 
   switch (sel) {
@@ -208,7 +209,292 @@ std::wstring get_level_of_detail (HWND hDlg)
     default:
       return L"far";
   }
+#else
+  return L"";
+#endif
 }
+
+void setup_ssao (HWND hDlg)
+{
+  HWND hWndSSAO = GetDlgItem (hDlg, IDC_SSAO);
+
+  ComboBox_ResetContent (hWndSSAO);
+  ComboBox_InsertString (hWndSSAO, 0, L"Off");
+  ComboBox_InsertString (hWndSSAO, 1, L"Medium");
+  ComboBox_InsertString (hWndSSAO, 2, L"High");
+
+  std::wstring ssao = xml_ssao->get_value ();
+
+  if (ssao == L"OFF")
+    ComboBox_SetCurSel (hWndSSAO, 0);
+  else if (ssao == L"MEDIUM")
+    ComboBox_SetCurSel (hWndSSAO, 1);
+  else /*if (ssao == L"HIGH")*/
+    ComboBox_SetCurSel (hWndSSAO, 2);
+}
+
+std::wstring get_ssao (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_SSAO));
+
+  if (sel == 0)
+    return L"OFF";
+  else if (sel == 1)
+    return L"MEDIUM";
+  else /*if (sel == 2)*/
+    return L"HIGH";
+}
+
+
+void setup_dof (HWND hDlg)
+{
+  HWND hWndDOF = GetDlgItem (hDlg, IDC_DOF);
+
+  ComboBox_ResetContent (hWndDOF);
+  ComboBox_InsertString (hWndDOF, 0, L"Off");
+  ComboBox_InsertString (hWndDOF, 1, L"Low");
+  ComboBox_InsertString (hWndDOF, 2, L"Medium");
+  ComboBox_InsertString (hWndDOF, 3, L"High");
+  ComboBox_InsertString (hWndDOF, 4, L"Maximum");
+
+  std::wstring dof = xml_dof->get_value ();
+
+  if (dof == L"OFF")
+    ComboBox_SetCurSel (hWndDOF, 0);
+  else if (dof == L"LOW")
+    ComboBox_SetCurSel (hWndDOF, 1);
+  else if (dof == L"MEDIUM")
+    ComboBox_SetCurSel (hWndDOF, 2);
+  else if (dof == L"HIGH")
+    ComboBox_SetCurSel (hWndDOF, 3);
+  else /*if (dof == L"MAX")*/
+    ComboBox_SetCurSel (hWndDOF, 4);
+}
+
+std::wstring get_dof (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_DOF));
+
+  if (sel == 0)
+    return L"OFF";
+  else if (sel == 1)
+    return L"LOW";
+  else if (sel == 2)
+    return L"MEDIUM";
+  else if (sel == 3)
+    return L"HIGH";
+  else /*if (sel == 4)*/
+    return L"MAX";
+}
+
+
+void setup_motion_blur (HWND hDlg)
+{
+  HWND hWndMotionBlur = GetDlgItem (hDlg, IDC_MOTION_BLUR);
+
+  ComboBox_ResetContent (hWndMotionBlur);
+  ComboBox_InsertString (hWndMotionBlur, 0, L"Off");
+  ComboBox_InsertString (hWndMotionBlur, 1, L"Low");
+  ComboBox_InsertString (hWndMotionBlur, 2, L"Medium");
+  ComboBox_InsertString (hWndMotionBlur, 3, L"High");
+
+  std::wstring motion_blur = xml_motion_blur->get_value ();
+
+  if (motion_blur == L"OFF")
+    ComboBox_SetCurSel (hWndMotionBlur, 0);
+  else if (motion_blur == L"LOW")
+    ComboBox_SetCurSel (hWndMotionBlur, 1);
+  else if (motion_blur == L"MEDIUM")
+    ComboBox_SetCurSel (hWndMotionBlur, 2);
+  else /*if (motion_blur == L"HIGH")*/
+    ComboBox_SetCurSel (hWndMotionBlur, 3);
+}
+
+std::wstring get_motion_blur (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_MOTION_BLUR));
+
+  if (sel == 0)
+    return L"OFF";
+  else if (sel == 1)
+    return L"LOW";
+  else if (sel == 2)
+    return L"MEDIUM";
+  else /*if (sel == 3)*/
+    return L"HIGH";
+}
+
+
+void setup_lighting_quality (HWND hDlg)
+{
+  HWND hWndLightingQuality = GetDlgItem (hDlg, IDC_LIGHTING_QUALITY);
+
+  ComboBox_ResetContent (hWndLightingQuality);
+  ComboBox_InsertString (hWndLightingQuality, 0, L"Low");
+  ComboBox_InsertString (hWndLightingQuality, 1, L"Medium");
+  ComboBox_InsertString (hWndLightingQuality, 2, L"High");
+  ComboBox_InsertString (hWndLightingQuality, 3, L"Maximum");
+
+  std::wstring lighting_quality = xml_lighting_quality->get_value ();
+
+  if (lighting_quality == L"LOW")
+    ComboBox_SetCurSel (hWndLightingQuality, 0);
+  else if (lighting_quality == L"MEDIUM")
+    ComboBox_SetCurSel (hWndLightingQuality, 1);
+  else if (lighting_quality == L"HIGH")
+    ComboBox_SetCurSel (hWndLightingQuality, 2);
+  else /*if (lighting_quality == L"MAX")*/
+    ComboBox_SetCurSel (hWndLightingQuality, 3);
+}
+
+std::wstring get_lighting_quality (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_LIGHTING_QUALITY));
+
+  if (sel == 0)
+    return L"LOW";
+  else if (sel == 1)
+    return L"MEDIUM";
+  else if (sel == 2)
+    return L"HIGH";
+  else /*if (sel == 3)*/
+    return L"MAX";
+}
+
+
+void setup_effects_quality (HWND hDlg)
+{
+  HWND hWndEffectsQuality = GetDlgItem (hDlg, IDC_EFFECTS_QUALITY);
+
+  ComboBox_ResetContent (hWndEffectsQuality);
+  ComboBox_InsertString (hWndEffectsQuality, 0, L"Low");
+  ComboBox_InsertString (hWndEffectsQuality, 1, L"Medium");
+  ComboBox_InsertString (hWndEffectsQuality, 2, L"High");
+  ComboBox_InsertString (hWndEffectsQuality, 3, L"Maximum");
+
+  std::wstring effects_quality = xml_effects_quality->get_value ();
+
+  if (effects_quality == L"LOW")
+    ComboBox_SetCurSel (hWndEffectsQuality, 0);
+  else if (effects_quality == L"MEDIUM")
+    ComboBox_SetCurSel (hWndEffectsQuality, 1);
+  else if (effects_quality == L"HIGH")
+    ComboBox_SetCurSel (hWndEffectsQuality, 2);
+  else /*if (effects_quality == L"MAX")*/
+    ComboBox_SetCurSel (hWndEffectsQuality, 3);
+}
+
+std::wstring get_effects_quality (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_EFFECTS_QUALITY));
+
+  if (sel == 0)
+    return L"LOW";
+  else if (sel == 1)
+    return L"MEDIUM";
+  else if (sel == 2)
+    return L"HIGH";
+  else /*if (sel == 3)*/
+    return L"MAX";
+}
+
+
+void setup_reflection_quality (HWND hDlg)
+{
+  HWND hWndReflectionQuality = GetDlgItem (hDlg, IDC_REFLECTION_QUALITY);
+
+  ComboBox_ResetContent (hWndReflectionQuality);
+  ComboBox_InsertString (hWndReflectionQuality, 0, L"Low");
+  ComboBox_InsertString (hWndReflectionQuality, 1, L"High");
+  ComboBox_InsertString (hWndReflectionQuality, 2, L"Maximum");
+
+  std::wstring reflection_quality = xml_reflection_quality->get_value ();
+
+  if (reflection_quality == L"LOW")
+    ComboBox_SetCurSel (hWndReflectionQuality, 0);
+  else if (reflection_quality == L"HIGH")
+    ComboBox_SetCurSel (hWndReflectionQuality, 1);
+  else /*if (reflection_quality == L"MAX")*/
+    ComboBox_SetCurSel (hWndReflectionQuality, 2);
+}
+
+std::wstring get_reflection_quality (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_REFLECTION_QUALITY));
+
+  if (sel == 0)
+    return L"LOW";
+  else if (sel == 1)
+    return L"HIGH";
+  else /*if (sel == 2)*/
+    return L"MAX";
+}
+
+
+void setup_water_quality (HWND hDlg)
+{
+  HWND hWndWaterQuality = GetDlgItem (hDlg, IDC_WATER_QUALITY);
+
+  ComboBox_ResetContent (hWndWaterQuality);
+  ComboBox_InsertString (hWndWaterQuality, 0, L"Low");
+  ComboBox_InsertString (hWndWaterQuality, 1, L"High");
+
+  std::wstring water_quality = xml_water_quality->get_value ();
+
+  if (water_quality == L"LOW")
+    ComboBox_SetCurSel (hWndWaterQuality, 0);
+  else /*if (water_quality == L"HIGH")*/
+    ComboBox_SetCurSel (hWndWaterQuality, 1);
+}
+
+std::wstring get_water_quality (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_WATER_QUALITY));
+
+  if (sel == 0)
+    return L"LOW";
+  else /*if (sel == 1)*/
+    return L"HIGH";
+}
+
+
+void setup_shader_quality (HWND hDlg)
+{
+  HWND hWndShaderQuality = GetDlgItem (hDlg, IDC_SHADER_QUALITY);
+
+  ComboBox_ResetContent (hWndShaderQuality);
+  ComboBox_InsertString (hWndShaderQuality, 0, L"Low");
+  ComboBox_InsertString (hWndShaderQuality, 1, L"Medium");
+  ComboBox_InsertString (hWndShaderQuality, 2, L"High");
+  ComboBox_InsertString (hWndShaderQuality, 3, L"Maximum");
+
+  std::wstring shader_quality = xml_shader_quality->get_value ();
+
+  if (shader_quality == L"LOW")
+    ComboBox_SetCurSel (hWndShaderQuality, 0);
+  else if (shader_quality == L"MEDIUM")
+    ComboBox_SetCurSel (hWndShaderQuality, 1);
+  else if (shader_quality == L"HIGH")
+    ComboBox_SetCurSel (hWndShaderQuality, 2);
+  else /*if (shader_quality == L"MAX")*/
+    ComboBox_SetCurSel (hWndShaderQuality, 3);
+}
+
+std::wstring get_shader_quality (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_SHADER_QUALITY));
+
+  if (sel == 0)
+    return L"LOW";
+  else if (sel == 1)
+    return L"MEDIUM";
+  else if (sel == 2)
+    return L"HIGH";
+  else /*if (sel == 3)*/
+    return L"MAX";
+}
+
+
 
 void setup_shadow_quality (HWND hDlg)
 {
@@ -219,17 +505,20 @@ void setup_shadow_quality (HWND hDlg)
   ComboBox_InsertString (hWndShadowQuality, 1, L"Low");
   ComboBox_InsertString (hWndShadowQuality, 2, L"Medium");
   ComboBox_InsertString (hWndShadowQuality, 3, L"High");
+  ComboBox_InsertString (hWndShadowQuality, 4, L"Maximum");
 
-  std::wstring shadows = shadow_quality->get_value ();
+  std::wstring shadows = xml_shadow_quality->get_value ();
 
-  if (shadows == L"off")
+  if (shadows == L"OFF")
     ComboBox_SetCurSel (hWndShadowQuality, 0);
-  else if (shadows == L"low")
+  else if (shadows == L"LOW")
     ComboBox_SetCurSel (hWndShadowQuality, 1);
-  else if (shadows == L"medium")
+  else if (shadows == L"MEDIUM")
     ComboBox_SetCurSel (hWndShadowQuality, 2);
-  else /*if (shadows == L"high")*/
+  else if (shadows == L"HIGH")
     ComboBox_SetCurSel (hWndShadowQuality, 3);
+  else /*if (shadows == L"MAX")*/
+    ComboBox_SetCurSel (hWndShadowQuality, 4);
 }
 
 std::wstring get_shadow_quality (HWND hDlg)
@@ -237,18 +526,21 @@ std::wstring get_shadow_quality (HWND hDlg)
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_SHADOW_QUALITY));
 
   if (sel == 0)
-    return L"off";
+    return L"OFF";
   else if (sel == 1)
-    return L"low";
+    return L"LOW";
   else if (sel == 2)
-    return L"medium";
-  else /*if (sel == 3)*/
-    return L"high";
+    return L"MEDIUM";
+  else if (sel == 3)
+    return L"HIGH";
+  else /*if (sel == 4)*/
+    return L"MAX";
 }
 
 
 void setup_antialiasing (HWND hDlg)
 {
+#if 0
   HWND hWndAntialiasing = GetDlgItem (hDlg, IDC_FXAA_LEVEL);
 
   ComboBox_ResetContent (hWndAntialiasing);
@@ -267,72 +559,7 @@ void setup_antialiasing (HWND hDlg)
     ComboBox_SetCurSel (hWndAntialiasing, 2);
   else /*if (fxaa == L"fxaa_high")*/
     ComboBox_SetCurSel (hWndAntialiasing, 3);
-}
-
-std::wstring get_antialiasing (HWND hDlg)
-{
-  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_FXAA_LEVEL));
-
-  if (sel == 0)
-    return L"off";
-  else if (sel == 1)
-    return L"fxaa_low";
-  else if (sel == 2)
-    return L"fxaa_medium";
-  else /*if (sel == 3)*/
-    return L"fxaa_high";
-}
-
-
-void setup_draw_distance (HWND hDlg)
-{
-  HWND hWndDrawDistance = GetDlgItem (hDlg, IDC_DRAW_DISTANCE);
-
-  ComboBox_ResetContent (hWndDrawDistance);
-  ComboBox_InsertString (hWndDrawDistance, 0, L"Near");
-  ComboBox_InsertString (hWndDrawDistance, 1, L"Medium");
-  ComboBox_InsertString (hWndDrawDistance, 2, L"Far");
-
-  std::wstring dist = draw_distance->get_value ();
-
-  if (dist == L"near")
-    ComboBox_SetCurSel (hWndDrawDistance, 0);
-  else if (dist == L"medium")
-    ComboBox_SetCurSel (hWndDrawDistance, 1);
-  else /*if (dist == L"far")*/
-    ComboBox_SetCurSel (hWndDrawDistance, 2);
-}
-
-std::wstring get_draw_distance (HWND hDlg)
-{
-  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_DRAW_DISTANCE));
-
-  if (sel == 0)
-    return L"near";
-  else if (sel == 1)
-    return L"medium";
-  else /*if (sel == 2)*/
-    return L"far";
-}
-
-
-void setup_level_of_detail (HWND hDlg)
-{
-  HWND hWnd_LOD = GetDlgItem (hDlg, IDC_LEVEL_OF_DETAIL);
-
-  ComboBox_ResetContent (hWnd_LOD);
-  ComboBox_InsertString (hWnd_LOD, 0, L"Near");
-  ComboBox_InsertString (hWnd_LOD, 1, L"Medium");
-  ComboBox_InsertString (hWnd_LOD, 2, L"Far");
-
-  std::wstring lod = level_of_detail->get_value ();
-
-  if (lod == L"near")
-    ComboBox_SetCurSel (hWnd_LOD, 0);
-  else if (lod == L"medium")
-    ComboBox_SetCurSel (hWnd_LOD, 1);
-  else //if (lod == L"far")
-    ComboBox_SetCurSel (hWnd_LOD, 2);
+#endif
 }
 
 void setup_tex_filter (HWND hDlg)
@@ -492,8 +719,8 @@ void handle_window_radios (HWND hDlg, WORD ID)
 
   if (mode != 2)
     Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), 0);
-  else
-    Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), use_vsync->get_value ());
+  else if (presentation_interval != nullptr)
+    Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), presentation_interval->get_value ());
 }
 
 void setup_debug_utils (HWND hDlg, bool debug)
@@ -744,29 +971,57 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             g_ParameterFactory.create_parameter <int> (L"Texture Resolution Level")
           );
 
-        level_of_detail =
+        xml_ssao =
           static_cast <ParameterStringW *> (
-            g_ParameterFactory.create_parameter <std::wstring> (L"Level of Detail")
+            g_ParameterFactory.create_parameter <std::wstring> (L"SSAO")
           );
 
-        shadow_quality =
+        xml_shadow_quality =
           static_cast <ParameterStringW *> (
             g_ParameterFactory.create_parameter <std::wstring> (L"Shadow Quality")
           );
 
-        antialiasing =
+        xml_dof =
           static_cast <ParameterStringW *> (
-            g_ParameterFactory.create_parameter <std::wstring> (L"Antialiasing")
+            g_ParameterFactory.create_parameter <std::wstring> (L"Depth of Field")
           );
 
-        draw_distance =
+        xml_motion_blur =
           static_cast <ParameterStringW *> (
-            g_ParameterFactory.create_parameter <std::wstring> (L"Draw Distance")
+            g_ParameterFactory.create_parameter <std::wstring> (L"Motion Blur")
+          );
+
+        xml_lighting_quality =
+          static_cast <ParameterStringW *> (
+            g_ParameterFactory.create_parameter <std::wstring> (L"Lighting Quality")
+          );
+
+        xml_effects_quality =
+          static_cast <ParameterStringW *> (
+            g_ParameterFactory.create_parameter <std::wstring> (L"Effects Quality")
+          );
+
+        xml_reflection_quality =
+          static_cast <ParameterStringW *> (
+            g_ParameterFactory.create_parameter <std::wstring> (L"Reflection Quality")
+          );
+
+        xml_water_quality =
+          static_cast <ParameterStringW *> (
+            g_ParameterFactory.create_parameter <std::wstring> (L"Water Quality")
+          );
+
+        xml_shader_quality =
+          static_cast <ParameterStringW *> (
+            g_ParameterFactory.create_parameter <std::wstring> (L"Shader Quality")
           );
 
         if (sus_installed) {
           ds3t::INI::File* sus_ini =
             config.get_file_sus ();
+
+          ds3t::INI::File* dxgi_ini =
+            config.get_file_dxgi ();
 
           aspect_ratio_correction =
             static_cast <ds3t::ParameterBool *> (
@@ -777,11 +1032,68 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
           aspect_ratio_correction->register_to_ini ( sus_ini,
                                                        L"SUS.Render",
                                                          L"CorrectAspect" );
+
+          borderless_window =
+            static_cast <ds3t::ParameterBool *> (
+              ds3t::g_ParameterFactory.create_parameter <bool> (
+                L"Borderless Window Mode"
+              )
+            );
+          borderless_window->register_to_ini ( sus_ini,
+                                                       L"SUS.Window",
+                                                         L"Borderless" );
+
+          fullscreen_window =
+            static_cast <ds3t::ParameterBool *> (
+              ds3t::g_ParameterFactory.create_parameter <bool> (
+                L"Fullscreen Borderless Window Mode"
+              )
+            );
+          fullscreen_window->register_to_ini ( sus_ini,
+                                                 L"SUS.Window",
+                                                   L"Fullscreen" );
+
+          center_window =
+            static_cast <ds3t::ParameterBool *> (
+              ds3t::g_ParameterFactory.create_parameter <bool> (
+                L"Center Windows"
+              )
+            );
+          center_window->register_to_ini ( sus_ini,
+                                             L"SUS.Window",
+                                               L"Center" );
+
+          flip_mode =
+            static_cast <ds3t::ParameterBool *> (
+              ds3t::g_ParameterFactory.create_parameter <bool> (
+                L"Use Flip Mode"
+              )
+            );
+          flip_mode->register_to_ini ( sus_ini,
+                                         L"SUS.Render",
+                                           L"FlipMode" );
+
+          presentation_interval =
+            static_cast <ds3t::ParameterInt *> (
+              ds3t::g_ParameterFactory.create_parameter <int> (
+                L"Presentation Interval (VSYNC)"
+              )
+            );
+          presentation_interval->register_to_ini ( dxgi_ini,
+                                                     L"Render.DXGI",
+                                                       L"PresentationInterval" );
         }
       }
 
       if (sus_installed) {
         aspect_ratio_correction->load ();
+
+        borderless_window->load ();
+        fullscreen_window->load ();
+        center_window->load     ();
+
+        flip_mode->load             ();
+        presentation_interval->load ();
       }
 
       ////refresh_rate->register_to_cfg (config.get_file (), L"refreshRateHz");
@@ -802,11 +1114,8 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                      L"DefaultResY" );
       }
 
-      //////// TODO!!
-      ////////use_vsync->register_to_cfg (config.get_file (), L"vsync");
-      use_vsync->bind_to_control (new CheckBox (GetDlgItem (hDlg, IDC_VSYNC)));
-      use_vsync->load ();
-
+      Button_SetCheck ( GetDlgItem (hDlg, IDC_VSYNC),
+                        presentation_interval->get_value () > 0 );
 
       ////anisotropy->register_to_cfg (config.get_file (), L"anisotropy");
       ////anisotropy->load ();
@@ -814,21 +1123,35 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       //texture_res->register_to_ini (settings.get_file (), L"SystemSettings", L"TextureResolution");
       //texture_res->load ();
 
+      xml_shadow_quality->register_to_xml (ds3t::XML::ds3_root, L"ShadowQuality");
+      xml_shadow_quality->load ();
 
-      //level_of_detail->register_to_cfg (config.get_file (), L"lod_distance");
-      level_of_detail->load ();
+      xml_ssao->register_to_xml (ds3t::XML::ds3_root, L"SSAO");
+      xml_ssao->load ();
 
-      //shadow_quality->register_to_cfg (config.get_file (), L"shadows");
-      shadow_quality->load ();
+      xml_dof->register_to_xml (ds3t::XML::ds3_root, L"DepthOfField");
+      xml_dof->load ();
+
+      xml_motion_blur->register_to_xml (ds3t::XML::ds3_root, L"MotionBlur");
+      xml_motion_blur->load ();
+
+      xml_lighting_quality->register_to_xml (ds3t::XML::ds3_root, L"LightingQuality");
+      xml_lighting_quality->load ();
+
+      xml_effects_quality->register_to_xml (ds3t::XML::ds3_root, L"EffectsQuality");
+      xml_effects_quality->load ();
+
+      xml_reflection_quality->register_to_xml (ds3t::XML::ds3_root, L"ReflectionQuality");
+      xml_reflection_quality->load ();
+
+      xml_water_quality->register_to_xml (ds3t::XML::ds3_root, L"WaterSurfaceQuality");
+      xml_water_quality->load ();
+
+      xml_shader_quality->register_to_xml (ds3t::XML::ds3_root, L"ShadeQuality");
+      xml_shader_quality->load ();
 
       //antialiasing->register_to_cfg (config.get_file (), L"antialiasing");
-      antialiasing->load ();
-
-      //draw_distance->register_to_cfg (config.get_file (), L"draw_distance");
-      draw_distance->load ();
-
-      //framerate_limiting->register_to_ini (engine.get_file (), L"Engine.Engine", L"FrameRateLimitingSetting");
-      //framerate_limiting->load ();
+      //antialiasing->load ();
 
 #if 0
       //
@@ -853,10 +1176,16 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       setup_resolution       (hDlg);
       setup_tex_filter       (hDlg);
       setup_tex_res          (hDlg);
-      setup_level_of_detail  (hDlg);
-      setup_shadow_quality   (hDlg);
-      setup_antialiasing     (hDlg);
-      setup_draw_distance    (hDlg);
+
+      setup_ssao               (hDlg);
+      setup_dof                (hDlg);
+      setup_motion_blur        (hDlg);
+      setup_shadow_quality     (hDlg);
+      setup_lighting_quality   (hDlg);
+      setup_effects_quality    (hDlg);
+      setup_reflection_quality (hDlg);
+      setup_water_quality      (hDlg);
+      setup_shader_quality     (hDlg);
 
       setup_driver_tweaks    (hDlg);
 
@@ -891,24 +1220,17 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       }
 
       if (window_mode == 0) {
-        //mode = 0;
-        //handle_window_radios (hDlg, IDC_BORDER_WINDOW);
-        mode = 1;
-        handle_window_radios (hDlg, IDC_BORDERLESS_WINDOW);
-      }
-      /*
-      else if (window_mode == 1) {
-        // We have two borderless modes, one standard and this special one (change desktop res at launch)
-        if (config.lookup_value (L"GLOBAL", L"fullscreen") == L"3") {
-          mode = 1;
-          handle_window_radios (hDlg, IDC_BORDERLESS_WINDOW);
-        }
-        else {
-          mode = 3;
+        if ((! sus_installed) || (! borderless_window->get_value ())) {
+          mode = 0;
+          handle_window_radios (hDlg, IDC_BORDER_WINDOW);
+        } else {
+          if (fullscreen_window->get_value ())
+            mode = 1;
+          else
+            mode = 3;
           handle_window_radios (hDlg, IDC_BORDERLESS_WINDOW);
         }
       }
-      */
       else if (! (sus_installed && aspect_ratio_correction->get_value ())) {
         mode = 2;
         handle_window_radios (hDlg, IDC_FULLSCREEN);
@@ -1143,7 +1465,14 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         refresh_rate->set_value (refresh);
         refresh_rate->store     ();
 
-        //max_fps->store      ();
+        if (borderless_window->get_value ())
+          presentation_interval->set_value (0);
+        else
+          presentation_interval->set_value (
+            Button_GetCheck ( GetDlgItem (hDlg, IDC_VSYNC) )
+          );
+
+        presentation_interval->store ();
 
         use_vsync->store    ();
 
@@ -1152,36 +1481,63 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
         ////
 
-        level_of_detail->set_value (get_level_of_detail (hDlg));
-        level_of_detail->store     ();
+        xml_ssao->set_value (get_ssao (hDlg));
+        xml_ssao->store     ();
 
-        shadow_quality->set_value (get_shadow_quality (hDlg));
-        shadow_quality->store     ();
+        xml_dof->set_value (get_dof (hDlg));
+        xml_dof->store     ();
 
-        antialiasing->set_value   (get_antialiasing (hDlg));
-        antialiasing->store       ();
+        xml_motion_blur->set_value (get_motion_blur (hDlg));
+        xml_motion_blur->store     ();
 
-        draw_distance->set_value  (get_draw_distance (hDlg));
-        draw_distance->store      ();
+        xml_shadow_quality->set_value (get_shadow_quality (hDlg));
+        xml_shadow_quality->store     ();
+
+        xml_lighting_quality->set_value (get_lighting_quality (hDlg));
+        xml_lighting_quality->store     ();
+
+        xml_effects_quality->set_value (get_effects_quality (hDlg));
+        xml_effects_quality->store     ();
+
+        xml_reflection_quality->set_value (get_reflection_quality (hDlg));
+        xml_reflection_quality->store     ();
+
+        xml_water_quality->set_value (get_water_quality (hDlg));
+        xml_water_quality->store     ();
+
+        xml_shader_quality->set_value (get_shader_quality (hDlg));
+        xml_shader_quality->store     ();
+
+        //xml_antialiasing->set_value   (get_antialiasing (hDlg));
+        //xml_antialiasing->store       ();
 
         texture_res->set_value (get_tex_res (hDlg));
         texture_res->store     ();
-
-        //framerate_limiting->set_value (get_framerate_limiting (hDlg));
-        //framerate_limiting->set_value (7);
-        //framerate_limiting->store     ();
 
         int window_mode = 0;
 
         if (Button_GetCheck (GetDlgItem (hDlg, IDC_BORDER_WINDOW))) {
           window_mode = 0;
           config.set_value (L"ScreenMode", L"WINDOW");
+
+          if (borderless_window != nullptr) {
+            borderless_window->set_value (false);
+            borderless_window->store     ();
+          }
         }
 
         if (Button_GetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW)) == 1) {
           window_mode = 1;
           ///display_mode_val->value (L"1");
           config.set_value (L"ScreenMode", L"WINDOW");
+
+          if (borderless_window != nullptr) {
+            borderless_window->set_value (true);
+            borderless_window->store     ();
+
+            fullscreen_window->set_value (false);
+            fullscreen_window->store     ();
+          }
         }
 
         // We created a custom 4th mode, in which BMT changes the desktop resolution...
@@ -1190,12 +1546,28 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
           ///display_mode_val->value (L"1");
           config.set_value (L"ScreenMode", L"WINDOW");
           //settings.set_value (L"SystemSettings", L"WindowDisplayMode", L"3");
+
+          if (borderless_window != nullptr) {
+            borderless_window->set_value (true);
+            borderless_window->store     ();
+
+            fullscreen_window->set_value (true);
+            fullscreen_window->store     ();
+          }
         }
 
         if (Button_GetCheck (GetDlgItem (hDlg, IDC_FULLSCREEN))) {
           window_mode = 2;
           ///display_mode_val->value (L"2");
           config.set_value (L"ScreenMode", L"FULLSCREEN");
+
+          if (borderless_window != nullptr) {
+            borderless_window->set_value (false);
+            borderless_window->store     ();
+
+            fullscreen_window->set_value (false);
+            fullscreen_window->store     ();
+          }
         }
 
         bool cancel = false;
