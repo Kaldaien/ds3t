@@ -1230,7 +1230,7 @@
 #define IDC_BORDERLESS_WINDOW           1002
 #define IDC_CHECK1                      1002
 #define IDC_RTSS_STEALTH                1002
-#define IDC_FULLSCREEN                  1003
+#define IDC_SCREEN_MODE                 1003
 #define IDC_CHECK2                      1003
 #define IDC_RTSS_CUSTOM3D               1003
 #define IDC_MATCH_DESKTOP               1004

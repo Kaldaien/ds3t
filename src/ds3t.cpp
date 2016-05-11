@@ -41,12 +41,14 @@
 
 using namespace ds3t;
 
-#define DS3T_VERSION_STR L"0.0.3"
+#define DS3T_VERSION_STR L"0.0.4"
 
 INT_PTR CALLBACK  Config (HWND, UINT, WPARAM, LPARAM);
 
 bool  messagebox_active; // Workaround some particularly strange behavior
 bool  first_load = true; // Some settings should only be loaded once; ignore when false
+
+bool  sus_installed = false; // Whether Souls Unsqueezed is present
 
 HWND  hWndApp;
 
@@ -548,7 +550,12 @@ void setup_tex_filter (HWND hDlg)
   HWND hWndAnisotropy = GetDlgItem (hDlg, IDC_ANISOTROPY);
 
   ComboBox_ResetContent (hWndAnisotropy);
-  ComboBox_InsertString (hWndAnisotropy, 0, L"Trilinear");
+
+  //ComboBox_InsertString (hWndAnisotropy, 0, L"Trilinear");
+
+  ComboBox_InsertString (hWndAnisotropy, 0, L" Not Implemented");
+  ComboBox_Enable       (hWndAnisotropy, FALSE);
+
   ComboBox_InsertString (hWndAnisotropy, 1, L"2x Anisotropic");
   ComboBox_InsertString (hWndAnisotropy, 2, L"4x Anisotropic");
   ComboBox_InsertString (hWndAnisotropy, 3, L"8x Anisotropic");
@@ -603,21 +610,33 @@ void setup_tex_res (HWND hDlg)
   HWND hWndTexRes = GetDlgItem (hDlg, IDC_TEXTURE_RES);
 
   ComboBox_ResetContent (hWndTexRes);
-  ComboBox_InsertString (hWndTexRes, 0, L"CANNOT ADJUST ME");//Low (128x128 - 512x512) - 2 GiB VRAM");
-  ComboBox_InsertString (hWndTexRes, 1, L"Normal (128x128 - 1024x1024) - 4 GiB VRAM");
-  ComboBox_InsertString (hWndTexRes, 2, L"High (128x128 - 2048x2048) - 6 GiB VRAM");
+  ComboBox_InsertString (hWndTexRes, 0, L"Low");//Low (128x128 - 512x512) - 2 GiB VRAM");
+  ComboBox_InsertString (hWndTexRes, 1, L"Medium");
+  ComboBox_InsertString (hWndTexRes, 2, L"High");
+  ComboBox_InsertString (hWndTexRes, 3, L"Maximum");
 
-  if (texture_res->get_value () == 2)      // High
+  if (xml_texture_quality->get_value () == L"MAX")         // Max
+    ComboBox_SetCurSel (hWndTexRes, 3);
+  else if (xml_texture_quality->get_value () == L"HIGH")   // High
     ComboBox_SetCurSel (hWndTexRes, 2);
-  else if (texture_res->get_value () == 1) // Med
+  else if (xml_texture_quality->get_value () == L"MEDIUM") // Medium
     ComboBox_SetCurSel (hWndTexRes, 1);
   else
     ComboBox_SetCurSel (hWndTexRes, 0);    // Anything Else = Low
 }
 
-int get_tex_res (HWND hDlg)
+std::wstring get_tex_res (HWND hDlg)
 {
-  return ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_TEXTURE_RES));
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_TEXTURE_RES));
+
+  if (sel == 0)
+    return L"LOW";
+  else if (sel == 1)
+    return L"MEDIUM";
+  else if (sel == 2)
+    return L"HIGH";
+  else /*if (sel == 3)*/
+    return L"MAX";
 }
 
 bool DS3T_EpsilonTest (float in, float test)
@@ -632,86 +651,77 @@ bool DS3T_EpsilonTest (float in, float test)
 
 INT_PTR CALLBACK DriverConfigNV (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
-
-
-// What a nasty kludge this is, fix this ASAP!!!!
-int mode = 0;
-
-void handle_window_radios (HWND hDlg, WORD ID)
+void setup_display_mode (HWND hDlg)
 {
-  switch (ID) {
-    case IDC_BORDER_WINDOW:
-      mode = 0;
-      arc_start_fullscreen->set_value (false);
-      arc_start_fullscreen->store     ();
-      break;
-    case IDC_BORDERLESS_WINDOW:
-      if (mode == 1) {
-        mode = 3;
-        arc_start_fullscreen->set_value (true);
-        arc_start_fullscreen->store     ();
-      }
-      else {
-        mode = 1;
-        arc_start_fullscreen->set_value (false);
-        arc_start_fullscreen->store     ();
-      }
-      break;
-    case IDC_FULLSCREEN:
-      mode = 2;
-      arc_start_fullscreen->set_value (true);
-      arc_start_fullscreen->store     ();
-      break;
+  bool vsync      = false;
+  bool borderless = false;
+  bool fullscreen = true;
+
+  if (config.lookup_value (L"ScreenMode") == L"WINDOW")
+    fullscreen = false;
+
+  if (sus_installed) {
+    EnableWindow (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), TRUE);
+    EnableWindow (GetDlgItem (hDlg, IDC_VSYNC),             TRUE);
+
+    if (arc_start_fullscreen->get_value ())
+      fullscreen = true;
+
+    if (presentation_interval->get_value ())
+      vsync = true;
+
+    if (borderless_window->get_value ())
+      borderless = true;
+  } else {
+    EnableWindow (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), FALSE);
+    EnableWindow (GetDlgItem (hDlg, IDC_VSYNC),             FALSE);
   }
 
-  if (mode < 3) {
-    LONG style = GetWindowLong (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), GWL_STYLE);
-         style = (style & ~BS_AUTO3STATE) | BS_AUTORADIOBUTTON;
-    SetWindowLong (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), GWL_STYLE, style);
+  Button_SetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), borderless);
+  Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC),             vsync);
+
+  ComboBox_ResetContent (GetDlgItem (hDlg, IDC_SCREEN_MODE));
+
+  ComboBox_InsertString (GetDlgItem (hDlg, IDC_SCREEN_MODE), 0, L"Windowed");
+  ComboBox_InsertString (GetDlgItem (hDlg, IDC_SCREEN_MODE), 1, L"Fullscreen");
+
+  ComboBox_SetCurSel (GetDlgItem (hDlg, IDC_SCREEN_MODE), fullscreen);
+}
+
+std::wstring get_screen_mode (HWND hDlg)
+{
+  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_SCREEN_MODE));
+
+  // What value to store in the XML file, ARC may make this different than
+  //   the user's selection...
+  bool xml_window = (sel == 0);
+
+  if (sus_installed) {
+    arc_start_fullscreen->set_value (! xml_window);
+    arc_start_fullscreen->store     ();
+
+    if (aspect_ratio_correction->get_value ())
+      xml_window = true;
   }
 
-  if (mode == 0) {
-    Button_SetCheck (GetDlgItem (hDlg, IDC_BORDER_WINDOW),     1);
-    Button_SetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), 0);
-    Button_SetCheck (GetDlgItem (hDlg, IDC_FULLSCREEN),        0);
-  }
-  else if (mode == 2) {
-    Button_SetCheck (GetDlgItem (hDlg, IDC_BORDER_WINDOW),     0);
-    Button_SetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), 0);
-    Button_SetCheck (GetDlgItem (hDlg, IDC_FULLSCREEN),        1);
-  }
-  else {
-    Button_SetCheck (GetDlgItem (hDlg, IDC_BORDER_WINDOW), 0);
-    Button_SetCheck (GetDlgItem (hDlg, IDC_FULLSCREEN),    0);
+  if (xml_window)
+    return L"WINDOW";
+  else /*if (sel == 1)*/
+    return L"FULLSCREEN";
+}
 
-    // Regular borderless
-    if (mode == 1) {
-      LONG style = GetWindowLong (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), GWL_STYLE);
-           style = (style & ~BS_AUTO3STATE) | BS_AUTORADIOBUTTON;
-      SetWindowLong   (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), GWL_STYLE, style);
-      Button_SetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), 1);
-    }
-    else {
-      LONG style = GetWindowLong (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), GWL_STYLE);
-           style = (style & ~BS_AUTORADIOBUTTON) | BS_AUTO3STATE;
-      SetWindowLong   (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), GWL_STYLE, style);
-      Button_SetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), 2);
-    }
-  }
+bool get_vsync (HWND hDlg)
+{
+  bool vsync = Button_GetCheck (GetDlgItem (hDlg, IDC_VSYNC));
 
-  bool sus_installed = false;
+  return vsync;
+}
 
-  if (! (config.get_file_sus  ()->get_sections ().empty () ||
-         config.get_file_dxgi ()->get_sections ().empty ()))
-    sus_installed = true;
+bool get_borderless (HWND hDlg)
+{
+  bool borderless = Button_GetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW));
 
-  // Only enable this button in fullscreen mode...
-  Button_Enable (GetDlgItem (hDlg, IDC_VSYNC), (/*mode == 2 &&*/ sus_installed));
-
-  //if (mode != 2)
-    //Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), 0);
-  if (presentation_interval != nullptr)
-    Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), presentation_interval->get_value ());
+  return borderless;
 }
 
 void setup_debug_utils (HWND hDlg, bool debug)
@@ -918,8 +928,6 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       std::wstring config_path (DS3T_GetRoamingAppDataDir () + L"\\DarkSoulsIII\\");
       config.load (config_path);
 
-      bool sus_installed = false;
-
       if (! (config.get_file_sus  ()->get_sections ().empty () ||
              config.get_file_dxgi ()->get_sections ().empty ()))
         sus_installed = true;
@@ -955,6 +963,11 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         texture_res =
           static_cast <ParameterInt *> (
             g_ParameterFactory.create_parameter <int> (L"Texture Resolution Level")
+          );
+
+        xml_texture_quality =
+          static_cast <ParameterStringW *> (
+            g_ParameterFactory.create_parameter <std::wstring> (L"Texture Quality")
           );
 
         xml_ssao =
@@ -1086,7 +1099,6 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         arc_start_fullscreen->load    ();
 
         borderless_window->load ();
-        fullscreen_window->load ();
         center_window->load     ();
 
         flip_mode->load             ();
@@ -1117,8 +1129,8 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       ////anisotropy->register_to_cfg (config.get_file (), L"anisotropy");
       ////anisotropy->load ();
 
-      //texture_res->register_to_ini (settings.get_file (), L"SystemSettings", L"TextureResolution");
-      //texture_res->load ();
+      xml_texture_quality->register_to_xml (ds3t::XML::ds3_root, L"TextureQuality");
+      xml_texture_quality->load ();
 
       xml_shadow_quality->register_to_xml (ds3t::XML::ds3_root, L"ShadowQuality");
       xml_shadow_quality->load ();
@@ -1186,9 +1198,6 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
       setup_driver_tweaks    (hDlg);
 
-      //setup_config_status    (hDlg);
-      //setup_framerate_limiting (hDlg);
-
       std::wstring gpu_str = DXGI::GetGPUInfo ();
 
       HFONT font = CreateFont (11, 0, 0, 0, FW_LIGHT, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_NATURAL_QUALITY, MONO_FONT, L"Consolas");
@@ -1199,70 +1208,7 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       SetActiveWindow (GetDlgItem (hDlg, IDOK));
       SetFocus        (GetDlgItem (hDlg, IDOK));
 
-      EnableWindow    (GetDlgItem (hDlg, IDC_TEXTURE_RES), FALSE);
-
-      int window_mode =
-        config.lookup_value (L"ScreenMode") == std::wstring (L"FULLSCREEN");
-
-      if (sus_installed && (! window_mode) && (! borderless_window->get_value ())) {
-        if (arc_start_fullscreen->get_value ())
-          window_mode = 1;
-      }
-
-      // @TODO: Radio button wrapper, doing it this way is just plain ridiculous!
-
-      EnableWindow (GetDlgItem (hDlg, IDC_BORDER_WINDOW), TRUE);
-
-      if (sus_installed) {
-        EnableWindow (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), TRUE);
-        EnableWindow (GetDlgItem (hDlg, IDC_VSYNC),             TRUE);
-      } else {
-        EnableWindow (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW), FALSE);
-        EnableWindow (GetDlgItem (hDlg, IDC_VSYNC),             FALSE);
-      }
-
-      if (window_mode == 0) {
-        if ((! sus_installed) || (! borderless_window->get_value ())) {
-          mode = 0;
-          handle_window_radios (hDlg, IDC_BORDER_WINDOW);
-        } else {
-          if (fullscreen_window->get_value ())
-            mode = 1;
-          else
-            mode = 3;
-          handle_window_radios (hDlg, IDC_BORDERLESS_WINDOW);
-        }
-      }
-
-      else {
-        bool fullscreen = (! (sus_installed && aspect_ratio_correction->get_value ()));
-
-        if (! fullscreen)
-          fullscreen = (arc_start_fullscreen->get_value ());
-
-        if (fullscreen) {
-          mode = 2;
-          handle_window_radios (hDlg, IDC_FULLSCREEN);
-        }
-      }
-
-#if 0
-      if (sus_installed) {
-        HWND hWndFullscreen = GetDlgItem (hDlg, IDC_FULLSCREEN);
-
-        if (aspect_ratio_correction->get_value ()) {
-          extern int  mode;
-
-          if (mode == 2) {
-            mode = 1;
-            handle_window_radios (hDlgMain, IDC_BORDERLESS_WINDOW);
-          }
-        }
-
-        // We cannot allow fullscreen mode if aspect ratio correction is enabled
-        Button_Enable (hWndFullscreen, aspect_ratio_correction->get_value () == 0);
-      }
-#endif
+      setup_display_mode (hDlg);
 
       // Leave an empty space where the Souls Unsqueezed Config tab dialog should
       //   be if DarkSoulsIII.exe is not run from the correct directory.
@@ -1347,11 +1293,11 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       if (messagebox_active) // Ignore button clicks while a Message Box is active
         return 0;
 
-      if (LOWORD (wParam) == IDC_BORDERLESS_WINDOW || 
-          LOWORD (wParam) == IDC_BORDER_WINDOW     ||
-          LOWORD (wParam) == IDC_FULLSCREEN) {
-        handle_window_radios (hDlg, LOWORD (wParam));
+      if (LOWORD (wParam) == IDC_SCREEN_MODE) {
+        if (HIWORD (wParam) == CBN_SELCHANGE) {
+        }
       }
+
       if (LOWORD (wParam) == IDC_MATCH_DESKTOP) {
         DEVMODE dmNow;
 
@@ -1368,7 +1314,7 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       }
 
       if (LOWORD (wParam) == IDC_NV_DRIVER_TWEAKS) {
-        NVAPI::ds3t_fullscreen = (mode == 2); // This is a hack based on another hack (see handle_window_radios), yuck.
+        NVAPI::ds3t_fullscreen = true;
         return (int)DialogBox (GetWindowInstance (hDlg), MAKEINTRESOURCE (IDD_DRIVER_TWEAKS), hDlg, DriverConfigNV);
       }
 
@@ -1520,75 +1466,17 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         //xml_antialiasing->set_value   (get_antialiasing (hDlg));
         //xml_antialiasing->store       ();
 
-        texture_res->set_value (get_tex_res (hDlg));
-        texture_res->store     ();
+        xml_texture_quality->set_value (get_tex_res (hDlg));
+        xml_texture_quality->store     ();
 
-        int window_mode = 0;
+        config.set_value (L"ScreenMode", get_screen_mode (hDlg));
 
-        if (Button_GetCheck (GetDlgItem (hDlg, IDC_BORDER_WINDOW))) {
-          window_mode = 0;
-          config.set_value (L"ScreenMode", L"WINDOW");
+        if (sus_installed) {
+          borderless_window->set_value (get_borderless (hDlg));
+          borderless_window->store     ();
 
-          if (borderless_window != nullptr) {
-            borderless_window->set_value (false);
-            borderless_window->store     ();
-          }
-        }
-
-        if (Button_GetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW)) == 1) {
-          window_mode = 1;
-          ///display_mode_val->value (L"1");
-          config.set_value (L"ScreenMode", L"WINDOW");
-
-          if (borderless_window != nullptr) {
-            borderless_window->set_value (true);
-            borderless_window->store     ();
-
-            fullscreen_window->set_value (false);
-            fullscreen_window->store     ();
-          }
-        }
-
-        // We created a custom 4th mode, in which BMT changes the desktop resolution...
-        if (Button_GetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW)) == 2) {
-          window_mode = 1;
-          config.set_value (L"ScreenMode", L"WINDOW");
-
-          if (borderless_window != nullptr) {
-            borderless_window->set_value (true);
-            borderless_window->store     ();
-
-            fullscreen_window->set_value (true);
-            fullscreen_window->store     ();
-          }
-        }
-
-        if (Button_GetCheck (GetDlgItem (hDlg, IDC_FULLSCREEN))) {
-          window_mode = 2;
-          ///display_mode_val->value (L"2");
-
-          if ((! aspect_ratio_correction) || (! aspect_ratio_correction->get_value ()))
-            config.set_value (L"ScreenMode", L"FULLSCREEN");
-          else {
-            config.set_value (L"ScreenMode", L"WINDOW");
-            arc_start_fullscreen->set_value (1);
-            arc_start_fullscreen->store     ();
-          }
-
-          if (borderless_window != nullptr) {
-            borderless_window->set_value (false);
-            borderless_window->store     ();
-
-            fullscreen_window->set_value (false);
-            fullscreen_window->store     ();
-          }
-        }
-
-        // Do not automagically engage the fullscreen mode switch
-        //   at application start...
-        if (window_mode != 2 && arc_start_fullscreen != nullptr) {
-          arc_start_fullscreen->set_value (false);
-          arc_start_fullscreen->store     ();
+          presentation_interval->set_value (get_vsync (hDlg));
+          presentation_interval->store     ();
         }
 
         bool cancel = false;

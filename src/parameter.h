@@ -264,6 +264,7 @@ extern ds3t::ParameterInt*     res_y;
 extern ds3t::ParameterBool*    aspect_ratio_correction;
 extern ds3t::ParameterBool*    arc_start_fullscreen;
 
+extern ds3t::ParameterStringW* xml_texture_quality;
 extern ds3t::ParameterStringW* xml_ssao;
 extern ds3t::ParameterStringW* xml_dof;
 extern ds3t::ParameterStringW* xml_motion_blur;

@@ -431,15 +431,19 @@ ds3t::INI::File::write (std::wstring fname)
 
   while (it != end) {
     Section& section = get_section (*it);
-    fwprintf (fOut, L"[%s]\n", section.name.c_str ());
 
-    std::vector <std::wstring>::iterator key_it  = section.ordered_keys.begin ();
-    std::vector <std::wstring>::iterator key_end = section.ordered_keys.end   ();
+    // Ignore unnamed sections
+    if (section.name.length ()) {
+      fwprintf (fOut, L"[%s]\n", section.name.c_str ());
 
-    while (key_it != key_end) {
-      std::wstring val = section.get_value (*key_it);
-      fwprintf (fOut, L"%s=%s\n", key_it->c_str (), val.c_str ());
-      ++key_it;
+      std::vector <std::wstring>::iterator key_it  = section.ordered_keys.begin ();
+      std::vector <std::wstring>::iterator key_end = section.ordered_keys.end   ();
+
+      while (key_it != key_end) {
+        std::wstring val = section.get_value (*key_it);
+        fwprintf (fOut, L"%s=%s\n", key_it->c_str (), val.c_str ());
+        ++key_it;
+      }
     }
 
     // Append a newline for everything except the last line...
