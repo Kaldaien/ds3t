@@ -79,22 +79,10 @@ suscfg_Graphics::setup_ui (HWND hDlg)
 
   int ar_sel;
 
-#if 0
-  if (aspect_correct_videos->get_value () &&
-      aspect_correct_ui->get_value     ())
-    ar_sel = 3;
-  else if (aspect_correct_videos->get_value ())
-    ar_sel = 1;
-  else if (aspect_correct_ui->get_value ())
-    ar_sel = 2;
-  else
-    ar_sel = 0;
-#else
   if (aspect_ratio_correction->get_value ())
     ar_sel = 1;
   else
     ar_sel = 0;
-#endif
 
   ComboBox_SetCurSel (hWndAspectRatioCorrection, ar_sel);
 
@@ -126,6 +114,7 @@ GraphicsConfig (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
           Button_Enable (graphics->hWndStretchHUD, ar_sel >= 1);
           aspect_ratio_correction->set_value (ar_sel >= 1);
 
+#if 0
           extern HWND hDlgMain;
           HWND hWndFullscreen = GetDlgItem (hDlgMain, IDC_FULLSCREEN);
 
@@ -141,6 +130,7 @@ GraphicsConfig (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
           // We cannot allow fullscreen mode if aspect ratio correction is enabled
           Button_Enable (hWndFullscreen, ar_sel == 0);
+#endif
         }
       }
       if (LOWORD (wParam) == IDOK)

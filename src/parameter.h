@@ -260,8 +260,9 @@ private:
 extern ds3t::ParameterInt*     refresh_rate;
 extern ds3t::ParameterInt*     res_x;
 extern ds3t::ParameterInt*     res_y;
-extern ds3t::ParameterBool*    aspect_ratio_correction;
 
+extern ds3t::ParameterBool*    aspect_ratio_correction;
+extern ds3t::ParameterBool*    arc_start_fullscreen;
 
 extern ds3t::ParameterStringW* xml_ssao;
 extern ds3t::ParameterStringW* xml_dof;

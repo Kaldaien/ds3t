@@ -41,7 +41,7 @@
 
 using namespace ds3t;
 
-#define DS3T_VERSION_STR L"0.0.2"
+#define DS3T_VERSION_STR L"0.0.3"
 
 INT_PTR CALLBACK  Config (HWND, UINT, WPARAM, LPARAM);
 
@@ -195,25 +195,6 @@ void setup_driver_tweaks (HWND hDlg)
   }
 }
 
-std::wstring get_level_of_detail (HWND hDlg)
-{
-#if 0
-  int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_LEVEL_OF_DETAIL));
-
-  switch (sel) {
-    case 0:
-      return L"near";
-    case 1:
-      return L"medium";
-    case 2:
-    default:
-      return L"far";
-  }
-#else
-  return L"";
-#endif
-}
-
 void setup_ssao (HWND hDlg)
 {
   HWND hWndSSAO = GetDlgItem (hDlg, IDC_SSAO);
@@ -225,7 +206,7 @@ void setup_ssao (HWND hDlg)
 
   std::wstring ssao = xml_ssao->get_value ();
 
-  if (ssao == L"OFF")
+  if (ssao == L"DISABLE")
     ComboBox_SetCurSel (hWndSSAO, 0);
   else if (ssao == L"MEDIUM")
     ComboBox_SetCurSel (hWndSSAO, 1);
@@ -238,7 +219,7 @@ std::wstring get_ssao (HWND hDlg)
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_SSAO));
 
   if (sel == 0)
-    return L"OFF";
+    return L"DISABLE";
   else if (sel == 1)
     return L"MEDIUM";
   else /*if (sel == 2)*/
@@ -259,7 +240,7 @@ void setup_dof (HWND hDlg)
 
   std::wstring dof = xml_dof->get_value ();
 
-  if (dof == L"OFF")
+  if (dof == L"DISABLE")
     ComboBox_SetCurSel (hWndDOF, 0);
   else if (dof == L"LOW")
     ComboBox_SetCurSel (hWndDOF, 1);
@@ -276,7 +257,7 @@ std::wstring get_dof (HWND hDlg)
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_DOF));
 
   if (sel == 0)
-    return L"OFF";
+    return L"DISABLE";
   else if (sel == 1)
     return L"LOW";
   else if (sel == 2)
@@ -300,7 +281,7 @@ void setup_motion_blur (HWND hDlg)
 
   std::wstring motion_blur = xml_motion_blur->get_value ();
 
-  if (motion_blur == L"OFF")
+  if (motion_blur == L"DISABLE")
     ComboBox_SetCurSel (hWndMotionBlur, 0);
   else if (motion_blur == L"LOW")
     ComboBox_SetCurSel (hWndMotionBlur, 1);
@@ -315,7 +296,7 @@ std::wstring get_motion_blur (HWND hDlg)
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_MOTION_BLUR));
 
   if (sel == 0)
-    return L"OFF";
+    return L"DISABLE";
   else if (sel == 1)
     return L"LOW";
   else if (sel == 2)
@@ -410,7 +391,7 @@ void setup_reflection_quality (HWND hDlg)
 
   std::wstring reflection_quality = xml_reflection_quality->get_value ();
 
-  if (reflection_quality == L"LOW")
+  if (reflection_quality == L"DISABLE")
     ComboBox_SetCurSel (hWndReflectionQuality, 0);
   else if (reflection_quality == L"HIGH")
     ComboBox_SetCurSel (hWndReflectionQuality, 1);
@@ -423,7 +404,7 @@ std::wstring get_reflection_quality (HWND hDlg)
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_REFLECTION_QUALITY));
 
   if (sel == 0)
-    return L"LOW";
+    return L"DISABLE";
   else if (sel == 1)
     return L"HIGH";
   else /*if (sel == 2)*/
@@ -441,7 +422,7 @@ void setup_water_quality (HWND hDlg)
 
   std::wstring water_quality = xml_water_quality->get_value ();
 
-  if (water_quality == L"LOW")
+  if (water_quality == L"DISABLE")
     ComboBox_SetCurSel (hWndWaterQuality, 0);
   else /*if (water_quality == L"HIGH")*/
     ComboBox_SetCurSel (hWndWaterQuality, 1);
@@ -452,7 +433,7 @@ std::wstring get_water_quality (HWND hDlg)
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_WATER_QUALITY));
 
   if (sel == 0)
-    return L"LOW";
+    return L"DISABLE";
   else /*if (sel == 1)*/
     return L"HIGH";
 }
@@ -509,7 +490,7 @@ void setup_shadow_quality (HWND hDlg)
 
   std::wstring shadows = xml_shadow_quality->get_value ();
 
-  if (shadows == L"OFF")
+  if (shadows == L"DISABLE")
     ComboBox_SetCurSel (hWndShadowQuality, 0);
   else if (shadows == L"LOW")
     ComboBox_SetCurSel (hWndShadowQuality, 1);
@@ -526,7 +507,7 @@ std::wstring get_shadow_quality (HWND hDlg)
   int sel = ComboBox_GetCurSel (GetDlgItem (hDlg, IDC_SHADOW_QUALITY));
 
   if (sel == 0)
-    return L"OFF";
+    return L"DISABLE";
   else if (sel == 1)
     return L"LOW";
   else if (sel == 2)
@@ -661,15 +642,25 @@ void handle_window_radios (HWND hDlg, WORD ID)
   switch (ID) {
     case IDC_BORDER_WINDOW:
       mode = 0;
+      arc_start_fullscreen->set_value (false);
+      arc_start_fullscreen->store     ();
       break;
     case IDC_BORDERLESS_WINDOW:
-      if (mode == 1)
+      if (mode == 1) {
         mode = 3;
-      else
+        arc_start_fullscreen->set_value (true);
+        arc_start_fullscreen->store     ();
+      }
+      else {
         mode = 1;
+        arc_start_fullscreen->set_value (false);
+        arc_start_fullscreen->store     ();
+      }
       break;
     case IDC_FULLSCREEN:
       mode = 2;
+      arc_start_fullscreen->set_value (true);
+      arc_start_fullscreen->store     ();
       break;
   }
 
@@ -715,11 +706,11 @@ void handle_window_radios (HWND hDlg, WORD ID)
     sus_installed = true;
 
   // Only enable this button in fullscreen mode...
-  Button_Enable (GetDlgItem (hDlg, IDC_VSYNC), (mode == 2 && sus_installed));
+  Button_Enable (GetDlgItem (hDlg, IDC_VSYNC), (/*mode == 2 &&*/ sus_installed));
 
-  if (mode != 2)
-    Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), 0);
-  else if (presentation_interval != nullptr)
+  //if (mode != 2)
+    //Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), 0);
+  if (presentation_interval != nullptr)
     Button_SetCheck (GetDlgItem (hDlg, IDC_VSYNC), presentation_interval->get_value ());
 }
 
@@ -950,11 +941,6 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             g_ParameterFactory.create_parameter <int> (L"Y Resolution")
           );
 
-        //max_fps =
-          //static_cast <ParameterInt *> (
-            //g_ParameterFactory.create_parameter <int> (L"Maximum Framerate")
-          //);
-
         use_vsync =
           static_cast <ParameterInt *> (
             g_ParameterFactory.create_parameter <int> (L"Use VSYNC")
@@ -1033,6 +1019,16 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                                        L"SUS.Render",
                                                          L"CorrectAspect" );
 
+          arc_start_fullscreen =
+            static_cast <ds3t::ParameterBool *> (
+              ds3t::g_ParameterFactory.create_parameter <bool> (
+                L"Start In Fullscreen Mode (for ARC)"
+              )
+            );
+          arc_start_fullscreen->register_to_ini ( sus_ini,
+                                                    L"SUS.Render",
+                                                      L"StartFullscreen" );
+
           borderless_window =
             static_cast <ds3t::ParameterBool *> (
               ds3t::g_ParameterFactory.create_parameter <bool> (
@@ -1087,6 +1083,7 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
       if (sus_installed) {
         aspect_ratio_correction->load ();
+        arc_start_fullscreen->load    ();
 
         borderless_window->load ();
         fullscreen_window->load ();
@@ -1207,6 +1204,11 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       int window_mode =
         config.lookup_value (L"ScreenMode") == std::wstring (L"FULLSCREEN");
 
+      if (sus_installed && (! window_mode) && (! borderless_window->get_value ())) {
+        if (arc_start_fullscreen->get_value ())
+          window_mode = 1;
+      }
+
       // @TODO: Radio button wrapper, doing it this way is just plain ridiculous!
 
       EnableWindow (GetDlgItem (hDlg, IDC_BORDER_WINDOW), TRUE);
@@ -1231,11 +1233,20 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
           handle_window_radios (hDlg, IDC_BORDERLESS_WINDOW);
         }
       }
-      else if (! (sus_installed && aspect_ratio_correction->get_value ())) {
-        mode = 2;
-        handle_window_radios (hDlg, IDC_FULLSCREEN);
+
+      else {
+        bool fullscreen = (! (sus_installed && aspect_ratio_correction->get_value ()));
+
+        if (! fullscreen)
+          fullscreen = (arc_start_fullscreen->get_value ());
+
+        if (fullscreen) {
+          mode = 2;
+          handle_window_radios (hDlg, IDC_FULLSCREEN);
+        }
       }
 
+#if 0
       if (sus_installed) {
         HWND hWndFullscreen = GetDlgItem (hDlg, IDC_FULLSCREEN);
 
@@ -1251,6 +1262,7 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         // We cannot allow fullscreen mode if aspect ratio correction is enabled
         Button_Enable (hWndFullscreen, aspect_ratio_correction->get_value () == 0);
       }
+#endif
 
       // Leave an empty space where the Souls Unsqueezed Config tab dialog should
       //   be if DarkSoulsIII.exe is not run from the correct directory.
@@ -1465,12 +1477,9 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         refresh_rate->set_value (refresh);
         refresh_rate->store     ();
 
-        if (borderless_window->get_value ())
-          presentation_interval->set_value (0);
-        else
-          presentation_interval->set_value (
-            Button_GetCheck ( GetDlgItem (hDlg, IDC_VSYNC) )
-          );
+        presentation_interval->set_value (
+          Button_GetCheck ( GetDlgItem (hDlg, IDC_VSYNC) )
+        );
 
         presentation_interval->store ();
 
@@ -1543,9 +1552,7 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         // We created a custom 4th mode, in which BMT changes the desktop resolution...
         if (Button_GetCheck (GetDlgItem (hDlg, IDC_BORDERLESS_WINDOW)) == 2) {
           window_mode = 1;
-          ///display_mode_val->value (L"1");
           config.set_value (L"ScreenMode", L"WINDOW");
-          //settings.set_value (L"SystemSettings", L"WindowDisplayMode", L"3");
 
           if (borderless_window != nullptr) {
             borderless_window->set_value (true);
@@ -1559,7 +1566,14 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         if (Button_GetCheck (GetDlgItem (hDlg, IDC_FULLSCREEN))) {
           window_mode = 2;
           ///display_mode_val->value (L"2");
-          config.set_value (L"ScreenMode", L"FULLSCREEN");
+
+          if ((! aspect_ratio_correction) || (! aspect_ratio_correction->get_value ()))
+            config.set_value (L"ScreenMode", L"FULLSCREEN");
+          else {
+            config.set_value (L"ScreenMode", L"WINDOW");
+            arc_start_fullscreen->set_value (1);
+            arc_start_fullscreen->store     ();
+          }
 
           if (borderless_window != nullptr) {
             borderless_window->set_value (false);
@@ -1568,6 +1582,13 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             fullscreen_window->set_value (false);
             fullscreen_window->store     ();
           }
+        }
+
+        // Do not automagically engage the fullscreen mode switch
+        //   at application start...
+        if (window_mode != 2 && arc_start_fullscreen != nullptr) {
+          arc_start_fullscreen->set_value (false);
+          arc_start_fullscreen->store     ();
         }
 
         bool cancel = false;

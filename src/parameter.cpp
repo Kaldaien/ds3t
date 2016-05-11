@@ -328,6 +328,7 @@ ds3t::ParameterInt*     res_x;
 ds3t::ParameterInt*     res_y;
 
 ds3t::ParameterBool*    aspect_ratio_correction;
+ds3t::ParameterBool*    arc_start_fullscreen;
 
 
 ds3t::ParameterInt*     use_vsync;
