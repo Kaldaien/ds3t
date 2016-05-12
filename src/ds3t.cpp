@@ -41,7 +41,7 @@
 
 using namespace ds3t;
 
-#define DS3T_VERSION_STR L"0.0.4"
+#define DS3T_VERSION_STR L"0.0.5"
 
 INT_PTR CALLBACK  Config (HWND, UINT, WPARAM, LPARAM);
 
@@ -52,12 +52,12 @@ bool  sus_installed = false; // Whether Souls Unsqueezed is present
 
 HWND  hWndApp;
 
-//extern INT_PTR CALLBACK AudioConfig     (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK FramerateConfig (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK GraphicsConfig  (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK SteamConfig     (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK PluginsConfig   (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-extern INT_PTR CALLBACK OSDConfig       (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK PerformanceWizard (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK FramerateConfig   (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK GraphicsConfig    (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK SteamConfig       (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK PluginsConfig     (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK OSDConfig         (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 HWND  hWndSUSTab;
 
@@ -1123,9 +1123,6 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
                                      L"DefaultResY" );
       }
 
-      Button_SetCheck ( GetDlgItem (hDlg, IDC_VSYNC),
-                        presentation_interval->get_value () > 0 );
-
       ////anisotropy->register_to_cfg (config.get_file (), L"anisotropy");
       ////anisotropy->load ();
 
@@ -1215,7 +1212,7 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
       if (! (config.get_file_sus  ()->get_sections ().empty () ||
              config.get_file_dxgi ()->get_sections ().empty ())) {
         setup_sus_config   (hDlg);
-///////        hWndSUSTab = CreateDialog (GetWindowInstance (hDlg), MAKEINTRESOURCE (IDD_AUDIO), hDlg, AudioConfig);
+        hWndSUSTab = CreateDialog (GetWindowInstance (hDlg), MAKEINTRESOURCE (IDD_PERF_WIZARD), hDlg, PerformanceWizard);
       } else {
         EnableWindow (GetDlgItem (hDlg, IDC_SUS_TABS), FALSE);
       }
@@ -1255,7 +1252,7 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
           HINSTANCE hInstance = GetWindowInstance (hDlg);
 
           if (sel == SUS_WIZARD_TAB) {
-/////            hWndSUSTab = CreateDialog (GetWindowInstance (hDlg), MAKEINTRESOURCE (IDD_PERFORMANCE), hDlg, PerformanceWizard);
+            hWndSUSTab = CreateDialog (GetWindowInstance (hDlg), MAKEINTRESOURCE (IDD_PERF_WIZARD), hDlg, PerformanceWizard);
           } else if (sel == SUS_FRAMERATE_TAB) {
             hWndSUSTab = CreateDialog (GetWindowInstance (hDlg), MAKEINTRESOURCE (IDD_FRAMERATE), hDlg, FramerateConfig);
           } else if (sel == SUS_GRAPHICS_TAB) {
@@ -1423,11 +1420,13 @@ Config (HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         refresh_rate->set_value (refresh);
         refresh_rate->store     ();
 
-        presentation_interval->set_value (
-          Button_GetCheck ( GetDlgItem (hDlg, IDC_VSYNC) )
-        );
+        if (sus_installed) {
+          presentation_interval->set_value (
+            Button_GetCheck ( GetDlgItem (hDlg, IDC_VSYNC) )
+          );
 
-        presentation_interval->store ();
+          presentation_interval->store ();
+        }
 
         use_vsync->store    ();
 

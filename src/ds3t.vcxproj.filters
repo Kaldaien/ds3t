@@ -98,6 +98,9 @@
     <ClCompile Include="xml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sus_perfwiz.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ds3t.rc">

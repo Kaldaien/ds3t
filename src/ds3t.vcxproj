@@ -188,6 +188,7 @@
     <ClCompile Include="sus_framerate.cpp" />
     <ClCompile Include="sus_graphics.cpp" />
     <ClCompile Include="sus_osd.cpp" />
+    <ClCompile Include="sus_perfwiz.cpp" />
     <ClCompile Include="sus_plugins.cpp" />
     <ClCompile Include="sus_steam.cpp" />
     <ClCompile Include="ds3t.cpp" />

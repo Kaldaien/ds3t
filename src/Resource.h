@@ -890,6 +890,7 @@
 #define LANG_WOLOF                      0x88
 #define IDI_STEAM                       137
 #define LANG_DARI                       0x8c
+#define IDD_PERF_WIZARD                 140
 #define IDD_FRAMERATE                   141
 #define CF_DSPENHMETAFILE               0x008E
 #define IDD_STEAM                       143
@@ -1335,6 +1336,14 @@
 #define IDC_RESOLUTION                  1074
 #define grp4                            0x0433
 #define IDC_SUS_TABS                    1075
+#define IDC_PERF_DISP_MODE              1076
+#define IDC_PERF_TEARING                1077
+#define IDC_PERF_GOAL                   1078
+#define IDC_PERF_HEADER                 1079
+#define IDC_PERF_DESCRIPTION            1080
+#define IDC_PERF_FOOTER                 1081
+#define IDC_PERF_OPTIMIZE               1082
+#define IDC_PERF_COMPATIBILITY          1083
 #define frm1                            0x0434
 #define frm2                            0x0435
 #define frm3                            0x0436
